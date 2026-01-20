@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Diet Planner Pro - Full Version</title>
+    <title>Diet Planner Pro - 6 Pasti</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --p: #4a90e2; --s: #2ecc71; --d: #e74c3c; --bg: #f0f2f5; }
@@ -21,17 +21,19 @@
         .t-box small { color: var(--p); float: right; }
         .input-group, .macro-inputs { display: flex; gap: 5px; margin-bottom: 8px; }
         input, select { padding: 8px; border-radius: 6px; border: 1px solid #ddd; font-size: 13px; flex: 1; }
-        button { cursor: pointer; border-radius: 6px; border: none; font-weight: bold; }
+        button { cursor: pointer; border-radius: 6px; border: none; font-weight: bold; transition: 0.2s; }
+        button:active { opacity: 0.7; }
         .btn-ok { background: var(--p); color: white; padding: 10px; }
-        .btn-sec { background: #95a5a6; color: white; padding: 5px 10px; font-size: 12px; }
+        .btn-sec { background: #95a5a6; color: white; padding: 5px 10px; font-size: 11px; flex: 1; }
         .db-list { max-height: 150px; overflow-y: auto; border-top: 1px solid #eee; margin-top: 10px; }
         .db-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee; }
-        .db-btns button { padding: 5px 8px; margin-left: 5px; color: white; }
+        .db-btns button { padding: 5px 8px; margin-left: 5px; color: white; font-size: 12px; }
         .edit-btn { background: #f39c12; }
         .del-btn { background: var(--d); }
-        .food-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #f9f9f9; }
+        .food-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #f9f9f9; align-items: center; }
         .progress-bar { width: 100%; height: 8px; background: #eee; border-radius: 4px; margin-top: 10px; overflow: hidden; }
         #bar-fill { height: 100%; background: var(--s); width: 0%; transition: 0.3s; }
+        .meal-card h3 { color: var(--p); margin: 0 0 8px 0; font-size: 14px; border-bottom: 1px solid #eee; padding-bottom: 4px; }
         @media print { .add-food, .db-editor, .top-bar, .btn-ok, .remove-food { display: none !important; } }
     </style>
 </head>
@@ -47,8 +49,8 @@
                 <option value="venerdi">Venerdì</option><option value="sabato">Sabato</option>
                 <option value="domenica">Domenica</option>
             </select>
-            <button class="btn-sec" onclick="app.cloneDay()">Copia</button>
-            <button class="btn-sec" onclick="app.exportPDF()">PDF</button>
+            <button class="btn-sec" onclick="app.cloneDay()">COPIA GIORNO</button>
+            <button class="btn-sec" onclick="app.exportPDF()">PDF SETTIMANA</button>
         </div>
     </header>
 
@@ -60,7 +62,7 @@
             <div class="t-box">Fat (g) <small id="p-f">0%</small><input type="number" id="t-f" value="60" onchange="app.update()"></div>
             <div style="grid-column: span 2;">
                 <div class="progress-bar"><div id="bar-fill"></div></div>
-                <small id="kcal-label" style="display:block; text-align:center; margin-top:4px">0 / 2000 kcal</small>
+                <small id="kcal-label" style="display:block; text-align:center; margin-top:4px; font-weight:bold">0 / 2000 kcal</small>
             </div>
         </div>
         <div class="chart-container">
@@ -71,8 +73,12 @@
     <section class="add-food">
         <div class="input-group">
             <select id="meal-type">
-                <option value="colazione">Colazione</option><option value="spuntino">Spuntino</option>
-                <option value="pranzo">Pranzo</option><option value="cena">Cena</option>
+                <option value="colazione">Colazione</option>
+                <option value="spuntino mattina">Spuntino Mattina</option>
+                <option value="pranzo">Pranzo</option>
+                <option value="merenda">Merenda (Spuntino Pom.)</option>
+                <option value="cena">Cena</option>
+                <option value="extra">Extra / Pre-Nanna</option>
             </select>
             <input type="text" id="f-name" list="db-suggestions" placeholder="Cerca alimento..." oninput="app.checkDB(this.value)">
             <datalist id="db-suggestions"></datalist>
@@ -87,21 +93,21 @@
         <button class="btn-ok" style="width:100%" onclick="app.addFood()">AGGIUNGI AL PIANO</button>
     </section>
 
-    <div id="meals-container"></div>
+    <div id="meals-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px;"></div>
 
     <section class="db-editor">
-        <h3>🛠️ Database Alimenti</h3>
+        <h3>🛠️ Database Alimenti (Modifica/Elimina)</h3>
         <div class="db-list" id="db-list"></div>
     </section>
 </div>
 
 <script>
 const app = {
-    plan: JSON.parse(localStorage.getItem('diet_plan_v4')) || {},
-    db: JSON.parse(localStorage.getItem('diet_db_v4')) || {},
+    plan: JSON.parse(localStorage.getItem('diet_plan_v5')) || {},
+    db: JSON.parse(localStorage.getItem('diet_db_v5')) || {},
     currentDay: 'lunedi',
     chart: null,
-    meals: ['colazione', 'spuntino', 'pranzo', 'cena'],
+    meals: ['colazione', 'spuntino mattina', 'pranzo', 'merenda', 'cena', 'extra'],
 
     init() {
         this.initChart();
@@ -109,8 +115,8 @@ const app = {
     },
 
     update() {
-        localStorage.setItem('diet_plan_v4', JSON.stringify(this.plan));
-        localStorage.setItem('diet_db_v4', JSON.stringify(this.db));
+        localStorage.setItem('diet_plan_v5', JSON.stringify(this.plan));
+        localStorage.setItem('diet_db_v5', JSON.stringify(this.db));
         this.calculatePercentages();
         this.renderAll();
         this.updateChart();
@@ -183,7 +189,7 @@ const app = {
             const foods = dayData[m] || [];
             let html = `<div class="meal-card"><h3>${m.toUpperCase()}</h3>`;
             foods.forEach((f, i) => {
-                html += `<div class="food-row"><span>${f.name} (${f.qty}g) - <strong>${f.kcal} kcal</strong></span><button style="color:red; background:none; border:none; cursor:pointer;" onclick="app.removeFood('${m}', ${i})">×</button></div>`;
+                html += `<div class="food-row"><span>${f.name} (${f.qty}g)<br><small>${f.kcal} kcal | C:${f.c} P:${f.p} G:${f.f}</small></span><button style="color:red; background:none; border:none; cursor:pointer; font-size:18px;" onclick="app.removeFood('${m}', ${i})">×</button></div>`;
             });
             cont.innerHTML += html + `</div>`;
         });
@@ -193,8 +199,8 @@ const app = {
         const ctx = document.getElementById('macroChart').getContext('2d');
         this.chart = new Chart(ctx, {
             type: 'doughnut',
-            data: { labels: ['C', 'P', 'F'], datasets: [{ data: [0, 0, 0], backgroundColor: ['#ff6384', '#36a2eb', '#ffce56'] }] },
-            options: { plugins: { legend: { display: false } }, cutout: '70%' }
+            data: { labels: ['C', 'P', 'F'], datasets: [{ data: [0, 0, 0], backgroundColor: ['#ff6384', '#36a2eb', '#ffce56'], borderWidth: 0 }] },
+            options: { plugins: { legend: { display: false } }, cutout: '75%', maintainAspectRatio: false }
         });
     },
 
@@ -212,33 +218,37 @@ const app = {
     },
 
     cloneDay() {
-        const to = prompt("In quale giorno vuoi copiare? (es: martedi, mercoledi...)").toLowerCase();
+        const to = prompt("Copia in: lunedi, martedi, mercoledi, giovedi, venerdi, sabato, domenica").toLowerCase().replace(/ì/g, 'i');
         const days = ['lunedi','martedi','mercoledi','giovedi','venerdi','sabato','domenica'];
         if(days.includes(to)) {
-            this.plan[to] = JSON.parse(JSON.stringify(this.plan[this.currentDay]));
-            alert("Giorno copiato!");
+            this.plan[to] = JSON.parse(JSON.stringify(this.plan[this.currentDay] || {}));
             this.update();
-        } else { alert("Giorno non valido."); }
+            alert("Piano copiato con successo!");
+        } else { alert("Giorno non riconosciuto. Scrivi il nome del giorno senza accenti."); }
     },
 
     exportPDF() {
         const win = window.open('', '_blank');
-        let h = `<html><head><style>body{font-family:sans-serif;padding:20px} .day-box{border:1px solid #ddd; padding:10px; margin-bottom:20px; page-break-inside:avoid} h2{color:#4a90e2}</style></head><body><h1>Piano Alimentare Settimanale</h1>`;
+        let h = `<html><head><title>Stampa Piano</title><style>body{font-family:sans-serif;padding:20px} .day-box{border:1px solid #ddd; padding:15px; margin-bottom:20px; page-break-inside:avoid} h2{color:#4a90e2; margin-top:0} .meal-title{font-weight:bold; color:#333; margin-top:10px; display:block; border-bottom:1px solid #eee}</style></head><body><h1>Il Mio Piano Alimentare Settimanale</h1>`;
         ['lunedi','martedi','mercoledi','giovedi','venerdi','sabato','domenica'].forEach(d => {
             h += `<div class="day-box"><h2>${d.toUpperCase()}</h2>`;
+            let totalK = 0;
             this.meals.forEach(m => {
                 const foods = (this.plan[d] && this.plan[d][m]) ? this.plan[d][m] : [];
                 if(foods.length > 0) {
-                    h += `<strong>${m.toUpperCase()}</strong><ul>`;
-                    foods.forEach(f => h += `<li>${f.name} (${f.qty}g) - ${f.kcal} kcal</li>`);
+                    h += `<span class="meal-title">${m.toUpperCase()}</span><ul>`;
+                    foods.forEach(f => {
+                        h += `<li>${f.name} (${f.qty}g) - ${f.kcal} kcal</li>`;
+                        totalK += parseFloat(f.kcal);
+                    });
                     h += `</ul>`;
                 }
             });
-            h += `</div>`;
+            h += `<p><strong>Totale Calorie: ${Math.round(totalK)} kcal</strong></p></div>`;
         });
         win.document.write(h + `</body></html>`);
         win.document.close();
-        win.print();
+        setTimeout(() => { win.print(); }, 500);
     },
 
     editDBItem(k) {
@@ -248,10 +258,10 @@ const app = {
         document.getElementById('f-c').value = i.c;
         document.getElementById('f-p').value = i.p;
         document.getElementById('f-f').value = i.f;
-        window.scrollTo(0, 0);
+        window.scrollTo({top: 0, behavior: 'smooth'});
     },
 
-    deleteDBItem(k) { if(confirm("Eliminare?")) { delete this.db[k]; this.update(); } },
+    deleteDBItem(k) { if(confirm("Rimuovere dal database?")) { delete this.db[k]; this.update(); } },
     removeFood(m, i) { this.plan[this.currentDay][m].splice(i, 1); this.update(); },
     changeDay() { this.currentDay = document.getElementById('day-select').value; this.update(); }
 };
