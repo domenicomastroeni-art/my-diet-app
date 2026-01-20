@@ -1,5 +1,5 @@
 const app = {
-    plan: JSON.parse(localStorage.getItem('diet_v2')) || {
+    plan: JSON.parse(localStorage.getItem('diet_v3')) || {
         lunedi: {}, martedi: {}, mercoledi: {}, giovedi: {}, venerdi: {}, sabato: {}, domenica: {}
     },
     foodDB: JSON.parse(localStorage.getItem('food_db')) || {},
@@ -21,10 +21,9 @@ const app = {
         this.calculateStats();
         this.renderMeals();
         this.renderShopping();
-        localStorage.setItem('diet_v2', JSON.stringify(this.plan));
+        localStorage.setItem('diet_v3', JSON.stringify(this.plan));
     },
 
-    // --- DATABASE & RICETTE ---
     checkDatabase(name) {
         const entry = this.foodDB[name.toLowerCase()];
         if (entry) {
@@ -44,7 +43,7 @@ const app = {
         const p = parseFloat(document.getElementById('in-pro').value) || 0;
         const f = parseFloat(document.getElementById('in-fat').value) || 0;
 
-        if(!name || !qty || isNaN(k)) return alert("Inserisci Nome, Quantità e Kcal");
+        if(!name || !qty || isNaN(k)) return alert("Compila i campi!");
 
         const item = {
             id: Date.now(), name, qty,
@@ -64,6 +63,24 @@ const app = {
         ['search-input','qty-input','in-kcal','in-carb','in-pro','in-fat'].forEach(id => document.getElementById(id).value = "");
     },
 
+    deleteDBEntry(key) {
+        if(confirm(`Eliminare ${this.foodDB[key].name}?`)) {
+            delete this.foodDB[key];
+            localStorage.setItem('food_db', JSON.stringify(this.foodDB));
+            this.updateDatalist();
+        }
+    },
+
+    editDBEntry(key) {
+        const entry = this.foodDB[key];
+        document.getElementById('search-input').value = entry.name;
+        document.getElementById('in-kcal').value = entry.kcal;
+        document.getElementById('in-carb').value = entry.c;
+        document.getElementById('in-pro').value = entry.p;
+        document.getElementById('in-fat').value = entry.f;
+        window.scrollTo({top: 0, behavior: 'smooth'});
+    },
+
     saveAsRecipe(mealName) {
         const items = this.plan[this.currentDay][mealName];
         if (items.length === 0) return;
@@ -76,10 +93,9 @@ const app = {
         this.foodDB[rName.toLowerCase()] = { name: `RICETTA: ${rName}`, kcal: rT.kcal.toFixed(1), c: rT.c.toFixed(1), p: rT.p.toFixed(1), f: rT.f.toFixed(1) };
         localStorage.setItem('food_db', JSON.stringify(this.foodDB));
         this.updateDatalist();
-        alert("Ricetta salvata!");
+        alert("Ricetta salvata nel DB!");
     },
 
-    // --- CALCOLI & RENDER ---
     calculateStats() {
         let t = { kcal: 0, c: 0, p: 0, f: 0 };
         Object.values(this.plan[this.currentDay]).forEach(m => m.forEach(i => {
@@ -119,7 +135,6 @@ const app = {
         });
     },
 
-    // --- GRAFICI ---
     initCharts() {
         this.charts.macro = new Chart(document.getElementById('macroChart'), {
             type: 'doughnut',
@@ -140,7 +155,6 @@ const app = {
         this.charts.weight.update();
     },
 
-    // --- UTILITY ---
     addWeight() {
         const v = document.getElementById('w-input').value;
         if(v) { 
@@ -150,6 +164,14 @@ const app = {
             document.getElementById('w-input').value = "";
         }
     },
+
+    resetWeek() {
+        if(confirm("Vuoi cancellare tutti i pasti della settimana? (Il database alimenti rimarrà)")) {
+            Object.keys(this.plan).forEach(d => this.meals.forEach(m => this.plan[d][m] = []));
+            this.update();
+        }
+    },
+
     remove(m, i) { this.plan[this.currentDay][m].splice(i, 1); this.update(); },
     changeDay() { this.currentDay = document.getElementById('day-select').value; this.update(); },
     cloneDay() {
@@ -159,7 +181,7 @@ const app = {
     convert() {
         const v = document.getElementById('conv-val').value;
         const r = document.getElementById('conv-type').value;
-        document.getElementById('conv-res').innerText = `Peso stimato: ${(v*r).toFixed(0)}g`;
+        document.getElementById('conv-res').innerText = `Risultato: ${(v*r).toFixed(0)}g`;
     },
     renderShopping() {
         const list = {};
@@ -178,6 +200,18 @@ const app = {
     updateDatalist() {
         document.getElementById('food-database').innerHTML = Object.keys(this.foodDB).map(k => `<option value="${this.foodDB[k].name}">`).join('');
         document.getElementById('db-count').innerText = Object.keys(this.foodDB).length;
+        this.renderDBEditor();
+    },
+    renderDBEditor() {
+        const container = document.getElementById('db-list-container');
+        container.innerHTML = '';
+        Object.keys(this.foodDB).sort().forEach(k => {
+            const entry = this.foodDB[k];
+            const div = document.createElement('div');
+            div.className = 'db-item';
+            div.innerHTML = `<span><strong>${entry.name}</strong></span> <div><button class="btn-edit" onclick="app.editDBEntry('${k}')">✏️</button><button class="btn-del" onclick="app.deleteDBEntry('${k}')">🗑️</button></div>`;
+            container.appendChild(div);
+        });
     },
     exportPDF() {
         const win = window.open('', '_blank');

@@ -15,7 +15,7 @@ header, .stats-panel, .add-food, .tool-card, .shopping-card, .weight-card, .meal
 #bar-fill { height: 100%; width: 0%; background: var(--s); transition: 0.3s; }
 .top-bar { display: flex; flex-direction: column; gap: 8px; margin: 10px 0; }
 .header-btns { display: flex; gap: 4px; }
-.btn-sec { flex: 1; padding: 8px; font-size: 11px; background: #95a5a6; color: white; border: none; border-radius: 6px; cursor: pointer; }
+.btn-sec { flex: 1; padding: 8px; font-size: 10px; background: #95a5a6; color: white; border: none; border-radius: 6px; cursor: pointer; }
 .input-group, .manual-macros { display: flex; gap: 4px; margin-bottom: 6px; }
 .input-group *, .manual-macros * { flex: 1; padding: 8px; border-radius: 6px; border: 1px solid #ddd; font-size: 12px; }
 .btn-primary { background: var(--p); color: white; border: none; font-weight: bold; flex: 0.4; cursor: pointer; }
@@ -23,7 +23,8 @@ header, .stats-panel, .add-food, .tool-card, .shopping-card, .weight-card, .meal
 .meal-card h3 { color: var(--p); margin: 0; font-size: 15px; }
 table { width: 100%; border-collapse: collapse; font-size: 12px; }
 td { padding: 8px 0; border-bottom: 1px solid #f2f2f2; }
-.extra-sections { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.db-management { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px; }
-.btn-mini { padding: 4px 8px; font-size: 10px; cursor: pointer; border: 1px solid #ddd; background: #f9f9f9; border-radius: 4px; }
+.db-list { max-height: 150px; overflow-y: auto; border: 1px solid #eee; border-radius: 8px; padding: 5px; margin-top: 10px; background: #fafafa; }
+.db-item { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; border-bottom: 1px solid #eee; font-size: 11px; }
+.btn-edit { background: var(--p); color: white; border: none; padding: 2px 5px; border-radius: 3px; cursor: pointer; margin-right: 3px;}
+.btn-del { background: var(--d); color: white; border: none; padding: 2px 5px; border-radius: 3px; cursor: pointer; }
 @media (max-width: 600px) { .extra-sections { grid-template-columns: 1fr; } }
