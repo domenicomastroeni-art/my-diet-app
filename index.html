@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Diet Planner Pro - Fix Database</title>
+    <title>Diet Planner Pro - Full</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --p: #4a90e2; --s: #2ecc71; --d: #e74c3c; --bg: #f0f2f5; }
@@ -17,23 +17,18 @@
         .targets-input { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; flex: 1; }
         .t-box { display: flex; flex-direction: column; font-size: 10px; font-weight: bold; color: #666; }
         .t-box input { border: 1px solid #ddd; border-radius: 6px; padding: 5px; margin-top: 2px; }
+        .t-box small { color: var(--p); float: right; }
         .input-group, .macro-inputs { display: flex; gap: 5px; margin-bottom: 8px; }
         input, select { padding: 8px; border-radius: 6px; border: 1px solid #ddd; font-size: 13px; flex: 1; }
         .btn-ok { background: var(--p); color: white; border: none; font-weight: bold; padding: 10px; border-radius: 6px; cursor: pointer; }
-        
-        /* Stile Database Editor */
-        .db-editor h3 { margin-top: 0; font-size: 16px; color: var(--p); }
         .db-list { max-height: 200px; overflow-y: auto; border-top: 1px solid #eee; margin-top: 10px; }
         .db-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee; }
-        .db-info { display: flex; flex-direction: column; }
-        .db-info small { color: #888; }
-        .db-btns button { padding: 5px 8px; border-radius: 4px; border: none; cursor: pointer; margin-left: 5px; font-size: 12px; }
+        .db-btns button { padding: 5px 8px; border-radius: 4px; border: none; cursor: pointer; margin-left: 5px; }
         .edit-btn { background: #f39c12; color: white; }
         .del-btn { background: var(--d); color: white; }
-        
-        .meal-card h3 { color: var(--p); margin: 0 0 10px 0; border-bottom: 2px solid #eee; padding-bottom: 5px; }
         .food-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #f9f9f9; }
-        .remove-food { color: var(--d); cursor: pointer; font-weight: bold; border: none; background: none; }
+        .progress-bar { width: 100%; height: 8px; background: #eee; border-radius: 4px; margin-top: 10px; overflow: hidden; }
+        #bar-fill { height: 100%; background: var(--s); width: 0%; transition: 0.3s; }
     </style>
 </head>
 <body>
@@ -51,10 +46,14 @@
 
     <section class="stats-panel">
         <div class="targets-input">
-            <div class="t-box">Target Kcal<input type="number" id="t-kcal" value="2000" onchange="app.update()"></div>
-            <div class="t-box">Carboidrati (g)<input type="number" id="t-c" value="250" onchange="app.update()"></div>
-            <div class="t-box">Proteine (g)<input type="number" id="t-p" value="150" onchange="app.update()"></div>
-            <div class="t-box">Grassi (g)<input type="number" id="t-f" value="60" onchange="app.update()"></div>
+            <div class="t-box">Kcal Target<input type="number" id="t-kcal" value="2000" onchange="app.update()"></div>
+            <div class="t-box">Carb (g) <small id="p-c">0%</small><input type="number" id="t-c" value="250" onchange="app.update()"></div>
+            <div class="t-box">Prot (g) <small id="p-p">0%</small><input type="number" id="t-p" value="150" onchange="app.update()"></div>
+            <div class="t-box">Fat (g) <small id="p-f">0%</small><input type="number" id="t-f" value="60" onchange="app.update()"></div>
+            <div style="grid-column: span 2;">
+                <div class="progress-bar"><div id="bar-fill"></div></div>
+                <small id="kcal-label" style="display:block; text-align:center; margin-top:4px">0 / 2000 kcal</small>
+            </div>
         </div>
         <div class="chart-container">
             <canvas id="macroChart"></canvas>
@@ -62,13 +61,12 @@
     </section>
 
     <section class="add-food">
-        <h3>Aggiungi Alimento</h3>
         <div class="input-group">
             <select id="meal-type">
                 <option value="colazione">Colazione</option><option value="spuntino">Spuntino</option>
                 <option value="pranzo">Pranzo</option><option value="cena">Cena</option>
             </select>
-            <input type="text" id="f-name" list="db-suggestions" placeholder="Nome alimento..." oninput="app.checkDB(this.value)">
+            <input type="text" id="f-name" list="db-suggestions" placeholder="Alimento..." oninput="app.checkDB(this.value)">
             <datalist id="db-suggestions"></datalist>
             <input type="number" id="f-qty" placeholder="g">
         </div>
@@ -78,15 +76,14 @@
             <input type="number" id="f-p" placeholder="P">
             <input type="number" id="f-f" placeholder="G">
         </div>
-        <button class="btn-ok" style="width:100%" onclick="app.addFood()">AGGIUNGI AL PIANO</button>
+        <button class="btn-ok" style="width:100%" onclick="app.addFood()">AGGIUNGI</button>
     </section>
 
     <div id="meals-container"></div>
 
     <section class="db-editor">
-        <h3>🛠️ Gestione Database Alimenti</h3>
-        <div class="db-list" id="db-list">
-            </div>
+        <h3>🛠️ Database Alimenti</h3>
+        <div class="db-list" id="db-list"></div>
     </section>
 </div>
 
@@ -98,18 +95,29 @@ const app = {
     chart: null,
 
     init() {
-        this.renderAll();
         this.initChart();
+        this.update();
     },
 
     update() {
         localStorage.setItem('diet_plan_v4', JSON.stringify(this.plan));
         localStorage.setItem('diet_db_v4', JSON.stringify(this.db));
+        this.calculatePercentages();
         this.renderAll();
         this.updateChart();
     },
 
-    // DATABASE LOGIC
+    calculatePercentages() {
+        const tk = parseFloat(document.getElementById('t-kcal').value) || 1;
+        const tc = parseFloat(document.getElementById('t-c').value) || 0;
+        const tp = parseFloat(document.getElementById('t-p').value) || 0;
+        const tf = parseFloat(document.getElementById('t-f').value) || 0;
+
+        document.getElementById('p-c').innerText = Math.round((tc * 4 / tk) * 100) + "%";
+        document.getElementById('p-p').innerText = Math.round((tp * 4 / tk) * 100) + "%";
+        document.getElementById('p-f').innerText = Math.round((tf * 9 / tk) * 100) + "%";
+    },
+
     checkDB(val) {
         const item = this.db[val.toLowerCase()];
         if(item) {
@@ -129,12 +137,9 @@ const app = {
         const p = parseFloat(document.getElementById('f-p').value) || 0;
         const f = parseFloat(document.getElementById('f-f').value) || 0;
 
-        if(!name || !qty || isNaN(kcal)) return alert("Inserisci nome, quantità e calorie!");
+        if(!name || !qty || isNaN(kcal)) return alert("Dati mancanti!");
 
-        // Salva nel DB
         this.db[name.toLowerCase()] = { name, kcal, c, p, f };
-
-        // Aggiungi al piano
         if(!this.plan[this.currentDay]) this.plan[this.currentDay] = {};
         if(!this.plan[this.currentDay][meal]) this.plan[this.currentDay][meal] = [];
         
@@ -151,48 +156,12 @@ const app = {
         document.getElementById('f-qty').value = '';
     },
 
-    editDBItem(key) {
-        const item = this.db[key];
-        document.getElementById('f-name').value = item.name;
-        document.getElementById('f-kcal').value = item.kcal;
-        document.getElementById('f-c').value = item.c;
-        document.getElementById('f-p').value = item.p;
-        document.getElementById('f-f').value = item.f;
-        window.scrollTo(0, 300);
-    },
-
-    deleteDBItem(key) {
-        if(confirm("Eliminare definitivamente questo alimento dal database?")) {
-            delete this.db[key];
-            this.update();
-        }
-    },
-
-    removeFood(meal, index) {
-        this.plan[this.currentDay][meal].splice(index, 1);
-        this.update();
-    },
-
-    changeDay() {
-        this.currentDay = document.getElementById('day-select').value;
-        this.renderAll();
-        this.updateChart();
-    },
-
-    // RENDERING
     renderAll() {
-        // Datalist suggestions
-        const dl = document.getElementById('db-suggestions');
-        dl.innerHTML = Object.keys(this.db).map(k => `<option value="${this.db[k].name}">`).join('');
-
-        // Database Editor List
-        const dbList = document.getElementById('db-list');
-        dbList.innerHTML = Object.keys(this.db).sort().map(k => `
+        document.getElementById('db-suggestions').innerHTML = Object.keys(this.db).map(k => `<option value="${this.db[k].name}">`).join('');
+        
+        document.getElementById('db-list').innerHTML = Object.keys(this.db).sort().map(k => `
             <div class="db-item">
-                <div class="db-info">
-                    <strong>${this.db[k].name}</strong>
-                    <small>${this.db[k].kcal} kcal/100g - C:${this.db[k].c} P:${this.db[k].p} G:${this.db[k].f}</small>
-                </div>
+                <div><strong>${this.db[k].name}</strong> <small>(${this.db[k].kcal} kcal)</small></div>
                 <div class="db-btns">
                     <button class="edit-btn" onclick="app.editDBItem('${k}')">✏️</button>
                     <button class="del-btn" onclick="app.deleteDBItem('${k}')">🗑️</button>
@@ -200,52 +169,57 @@ const app = {
             </div>
         `).join('');
 
-        // Piano Giornaliero
         const cont = document.getElementById('meals-container');
         cont.innerHTML = '';
-        const dayData = this.plan[this.currentDay] || {};
-        
         ['colazione', 'spuntino', 'pranzo', 'cena'].forEach(m => {
-            const foods = dayData[m] || [];
+            const foods = (this.plan[this.currentDay] && this.plan[this.currentDay][m]) ? this.plan[this.currentDay][m] : [];
             let html = `<div class="meal-card"><h3>${m.toUpperCase()}</h3>`;
             foods.forEach((f, i) => {
-                html += `
-                    <div class="food-row">
-                        <span>${f.name} (${f.qty}g) - <strong>${f.kcal} kcal</strong></span>
-                        <button class="remove-food" onclick="app.removeFood('${m}', ${i})">×</button>
-                    </div>`;
+                html += `<div class="food-row"><span>${f.name} (${f.qty}g) - ${f.kcal} kcal</span><button style="color:red; border:none; background:none; cursor:pointer" onclick="app.removeFood('${m}', ${i})">×</button></div>`;
             });
             cont.innerHTML += html + `</div>`;
         });
     },
 
-    // CHART
     initChart() {
         const ctx = document.getElementById('macroChart').getContext('2d');
         this.chart = new Chart(ctx, {
             type: 'doughnut',
-            data: {
-                labels: ['C', 'P', 'F'],
-                datasets: [{ data: [0, 0, 0], backgroundColor: ['#ff6384', '#36a2eb', '#ffce56'] }]
-            },
+            data: { labels: ['C', 'P', 'F'], datasets: [{ data: [0, 0, 0], backgroundColor: ['#ff6384', '#36a2eb', '#ffce56'] }] },
             options: { plugins: { legend: { display: false } }, cutout: '70%' }
         });
-        this.updateChart();
     },
 
     updateChart() {
-        let totals = { c: 0, p: 0, f: 0 };
+        let totals = { kcal:0, c: 0, p: 0, f: 0 };
         const dayData = this.plan[this.currentDay] || {};
         Object.values(dayData).forEach(m => m.forEach(f => {
-            totals.c += parseFloat(f.c); totals.p += parseFloat(f.p); totals.f += parseFloat(f.f);
+            totals.kcal += parseFloat(f.kcal); totals.c += parseFloat(f.c); totals.p += parseFloat(f.p); totals.f += parseFloat(f.f);
         }));
+
+        const tk = parseFloat(document.getElementById('t-kcal').value) || 1;
+        document.getElementById('bar-fill').style.width = Math.min((totals.kcal / tk * 100), 100) + "%";
+        document.getElementById('kcal-label').innerText = `${Math.round(totals.kcal)} / ${tk} kcal`;
+
         this.chart.data.datasets[0].data = [totals.c, totals.p, totals.f];
         this.chart.update();
-    }
-};
+    },
 
+    editDBItem(k) {
+        const i = this.db[k];
+        document.getElementById('f-name').value = i.name;
+        document.getElementById('f-kcal').value = i.kcal;
+        document.getElementById('f-c').value = i.c;
+        document.getElementById('f-p').value = i.p;
+        document.getElementById('f-f').value = i.f;
+        window.scrollTo(0, 0);
+    },
+
+    deleteDBItem(k) { if(confirm("Eliminare?")) { delete this.db[k]; this.update(); } },
+    removeFood(m, i) { this.plan[this.currentDay][m].splice(i, 1); this.update(); },
+    changeDay() { this.currentDay = document.getElementById('day-select').value; this.renderAll(); this.updateChart(); }
+};
 window.onload = () => app.init();
 </script>
-
 </body>
 </html>
