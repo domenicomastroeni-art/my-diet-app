@@ -5,11 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Diet Planner Pro</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="manifest" href="manifest.json">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="apple-touch-icon" href="icon-192.png">
-    <meta name="theme-color" content="#4a90e2">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
@@ -27,9 +22,9 @@
                     <option value="domenica">Domenica</option>
                 </select>
                 <div class="header-btns">
-                    <button class="btn-sec" onclick="app.cloneDay()">Copia Giorno</button>
-                    <button class="btn-sec" onclick="app.exportPDF()">Scarica PDF</button>
-                    <button class="btn-sec" style="background:#e67e22" onclick="app.resetWeek()">Reset Settimana</button>
+                    <button class="btn-sec" onclick="app.cloneDay()">Copia</button>
+                    <button class="btn-sec" onclick="app.exportPDF()">PDF</button>
+                    <button class="btn-sec" style="background:#e67e22" onclick="app.resetWeek()">Reset</button>
                 </div>
             </div>
         </header>
@@ -37,6 +32,71 @@
         <section class="stats-panel">
             <div class="targets-container">
                 <div class="targets-input">
-                    <div class="t-box"><span>Kcal Target</span><input type="number" id="target-kcal" value="2000" onchange="app.update()"></div>
-                    <div class="t-box"><span>Carb (g) <small id="perc-c">0%</small></span><input type="number" id="target-carbs" value="250" onchange="app.update()"></div>
-                    <div class="t-box"><span>Prot (g) <small id="perc-p">
+                    <div class="t-box"><span>Kcal</span><input type="number" id="target-kcal" value="2000" onchange="app.update()"></div>
+                    <div class="t-box"><span>C (g) <small id="perc-c">0%</small></span><input type="number" id="target-carbs" value="250" onchange="app.update()"></div>
+                    <div class="t-box"><span>P (g) <small id="perc-p">0%</small></span><input type="number" id="target-pro" value="150" onchange="app.update()"></div>
+                    <div class="t-box"><span>G (g) <small id="perc-f">0%</small></span><input type="number" id="target-fat" value="60" onchange="app.update()"></div>
+                </div>
+                <div class="progress-area">
+                    <div class="bar-bg"><div id="bar-fill"></div></div>
+                    <small id="kcal-label">0 / 2000 kcal</small>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="macroChart"></canvas>
+            </div>
+        </section>
+
+        <section class="add-food">
+            <h3>Aggiungi Alimento</h3>
+            <div class="input-group">
+                <select id="meal-select">
+                    <option value="colazione">Colazione</option>
+                    <option value="spuntino">Spuntino</option>
+                    <option value="pranzo">Pranzo</option>
+                    <option value="merenda">Merenda</option>
+                    <option value="cena">Cena</option>
+                    <option value="extra">Extra</option>
+                </select>
+                <input type="text" id="search-input" list="food-database" placeholder="Cerca..." oninput="app.checkDatabase(this.value)">
+                <datalist id="food-database"></datalist>
+                <input type="number" id="qty-input" placeholder="g">
+            </div>
+            <div class="manual-macros">
+                <input type="number" id="in-kcal" placeholder="Kcal/100g">
+                <input type="number" id="in-carb" placeholder="C">
+                <input type="number" id="in-pro" placeholder="P">
+                <input type="number" id="in-fat" placeholder="F">
+                <button onclick="app.addManual()" class="btn-primary">OK</button>
+            </div>
+            <div id="db-list-container" class="db-list"></div>
+        </section>
+
+        <div id="meals-list" class="meals-grid"></div>
+
+        <section class="extra-sections">
+            <div class="tool-card">
+                <h3>⚖️ Cotto/Crudo</h3>
+                <div class="input-group">
+                    <input type="number" id="conv-val" placeholder="g">
+                    <select id="conv-type">
+                        <option value="2.5">Pasta (x2.5)</option>
+                        <option value="0.7">Carne (x0.7)</option>
+                    </select>
+                    <button onclick="app.convert()" class="btn-primary">OK</button>
+                </div>
+                <p id="conv-res"></p>
+            </div>
+            <div class="weight-card">
+                <h3>📈 Peso</h3>
+                <div class="input-group">
+                    <input type="number" id="w-input" step="0.1" placeholder="kg">
+                    <button onclick="app.addWeight()" class="btn-primary">OK</button>
+                </div>
+                <div style="height: 100px;"><canvas id="weightChart"></canvas></div>
+            </div>
+        </section>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

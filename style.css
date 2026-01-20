@@ -1,19 +1,16 @@
 :root { --p: #4a90e2; --s: #2ecc71; --d: #e74c3c; --bg: #f0f2f5; }
 body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 10px; font-size: 14px; color: #333; }
 .app-container { max-width: 900px; margin: auto; }
-header, .stats-panel, .add-food, .tool-card, .shopping-card, .weight-card, .meal-card { 
-    background: #fff; padding: 15px; border-radius: 12px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
-}
+header, .stats-panel, .add-food, .tool-card, .weight-card, .meal-card { background: #fff; padding: 15px; border-radius: 12px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
 .stats-panel { display: flex; align-items: center; gap: 15px; }
 .targets-container { flex: 1; }
-.chart-container { width: 110px; height: 110px; flex-shrink: 0; }
+.chart-container { width: 100px; height: 100px; flex-shrink: 0; }
 .targets-input { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
 .t-box { display: flex; flex-direction: column; font-size: 10px; font-weight: bold; color: #666; }
-.t-box input { border: 1px solid #ddd; border-radius: 6px; padding: 4px; margin-top: 2px; }
-.t-box small { color: var(--p); float: right; font-size: 10px; }
+.t-box input { border: 1px solid #ddd; border-radius: 6px; padding: 4px; font-size: 12px; }
 .bar-bg { width: 100%; height: 8px; background: #eee; border-radius: 4px; overflow: hidden; }
 #bar-fill { height: 100%; width: 0%; background: var(--s); transition: 0.3s; }
-.top-bar { display: flex; flex-direction: column; gap: 8px; margin: 10px 0; }
+.top-bar { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
 .header-btns { display: flex; gap: 4px; }
 .btn-sec { flex: 1; padding: 8px; font-size: 10px; background: #95a5a6; color: white; border: none; border-radius: 6px; cursor: pointer; }
 .input-group, .manual-macros { display: flex; gap: 4px; margin-bottom: 6px; }
@@ -23,8 +20,5 @@ header, .stats-panel, .add-food, .tool-card, .shopping-card, .weight-card, .meal
 .meal-card h3 { color: var(--p); margin: 0; font-size: 15px; }
 table { width: 100%; border-collapse: collapse; font-size: 12px; }
 td { padding: 8px 0; border-bottom: 1px solid #f2f2f2; }
-.db-list { max-height: 150px; overflow-y: auto; border: 1px solid #eee; border-radius: 8px; padding: 5px; margin-top: 10px; background: #fafafa; }
-.db-item { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; border-bottom: 1px solid #eee; font-size: 11px; }
-.btn-edit { background: var(--p); color: white; border: none; padding: 2px 5px; border-radius: 3px; cursor: pointer; margin-right: 3px;}
-.btn-del { background: var(--d); color: white; border: none; padding: 2px 5px; border-radius: 3px; cursor: pointer; }
-@media (max-width: 600px) { .extra-sections { grid-template-columns: 1fr; } }
+.db-list { max-height: 120px; overflow-y: auto; border: 1px solid #eee; margin-top: 10px; border-radius: 6px; background: #fdfdfd; padding: 5px; }
+.db-item { display: flex; justify-content: space-between; padding: 5px; border-bottom: 1px solid #eee; font-size: 11px; }
