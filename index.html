@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pro Diet Planner</title>
+    
+    <link rel="stylesheet" href="style.css">
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <meta name="theme-color" content="#4a90e2">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Pro Diet Planner</h1>
+            <div class="day-nav">
+                <select id="day-select" onchange="changeDay()">
+                    <option value="lunedi">Lunedì</option>
+                    <option value="martedi">Martedì</option>
+                    <option value="mercoledi">Mercoledì</option>
+                    <option value="giovedi">Giovedì</option>
+                    <option value="venerdi">Venerdì</option>
+                    <option value="sabato">Sabato</option>
+                    <option value="domenica">Domenica</option>
+                </select>
+                <button onclick="cloneDay()" class="btn-secondary">Copia Giorno</button>
+            </div>
+        </header>
+
+        <section class="goals-grid">
+            <div class="goal-card"><span>Kcal:</span> <input type="number" id="goal-kcal" value="2000" onchange="updateStats()"></div>
+            <div class="goal-card"><span>Carb (g):</span> <input type="number" id="goal-carbs" value="250" onchange="updateStats()"></div>
+            <div class="goal-card"><span>Pro (g):</span> <input type="number" id="goal-pro" value="150" onchange="updateStats()"></div>
+            <div class="goal-card"><span>Fat (g):</span> <input type="number" id="goal-fat" value="60" onchange="updateStats()"></div>
+        </section>
+
+        <div class="progress-container">
+            <div class="progress-bar-bg"><div id="progress-bar-fill"></div></div>
+            <p id="progress-text">0 / 2000 kcal</p>
+        </div>
+
+        <section class="input-area">
+            <select id="meal-type-select">
+                <option value="colazione">Colazione</option>
+                <option value="spuntino">Spuntino</option>
+                <option value="pranzo">Pranzo</option>
+                <option value="merenda">Merenda</option>
+                <option value="cena">Cena</option>
+                <option value="extra">Pasto Extra</option>
+            </select>
+            <input type="text" id="food-search" placeholder="Cerca alimento...">
+            <input type="number" id="quantity-input" value="100">
+            <button onclick="searchFood()" class="btn-primary">Aggiungi</button>
+        </section>
+
+        <main class="main-layout">
+            <div id="meals-container" class="meals-grid"></div>
+            <aside class="sidebar">
+                <div class="chart-box">
+                    <canvas id="macroChart"></canvas>
+                </div>
+                
+                <div class="tool-card">
+                    <h3>⚖️ Cotto/Crudo</h3>
+                    <select id="conversion-type">
+                        <option value="2.5">Pasta/Riso (x2.5)</option>
+                        <option value="0.7">Carne (x0.7)</option>
+                        <option value="2.8">Legumi (x2.8)</option>
+                    </select>
+                    <input type="number" id="conv-input" placeholder="Grammi">
+                    <button onclick="convertWeight()">Converti</button>
+                    <p id="conv-result"></p>
+                </div>
+            </aside>
+        </main>
+
+        <section class="recipes-section">
+            <h2>📖 Ricette</h2>
+            <button onclick="saveCurrentAsRecipe()">Salva come Ricetta</button>
+            <div id="recipes-list"></div>
+        </section>
+
+        <section class="shopping-section">
+            <h2>🛒 Lista Spesa</h2>
+            <button onclick="downloadShoppingList()" class="btn-download">Scarica .txt</button>
+            <ul id="shopping-list"></ul>
+        </section>
+
+        <section class="weight-section">
+            <h2>📈 Peso Corporeo</h2>
+            <div class="weight-controls">
+                <input type="number" id="weight-input" step="0.1" placeholder="kg">
+                <button onclick="addWeight()">Registra</button>
+            </div>
+            <canvas id="weightChart"></canvas>
+        </section>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
